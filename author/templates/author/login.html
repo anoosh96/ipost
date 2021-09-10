@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{%block content %}
+<h1 class="mt-4 text-center">Login</h1>
+<form action="{% url 'users:login' %}" method="POST" class="col-md-6 mx-auto mt-4">
+    {% csrf_token %}
+    {% if request.GET.next %}
+    <input name="next" value="{{request.GET.next}}" type="hidden" />
+    {% endif %}
+    {% for field in form %}
+    <div class="form-group">
+        <div class="my-2">
+          {{field.label}}
+        </div>
+        <div class="my-2">
+          {{field}}
+        </div>
+        {{field.errors}}
+    </div>
+    {% endfor %}
+
+    <div class="my-2"><span class="d-inline-block mr-2">Don't have an account?</span><a href="{% url 'users:register' %}">Register Now</a></div>
+
+    <input type="submit" name="Create user" class="btn btn-primary" value="Login Now" />
+</form>
+{% endblock %}

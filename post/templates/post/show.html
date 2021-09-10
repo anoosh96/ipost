@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %} 
+    <section class="post">
+        <h1 class="text-center my-4">{{post_obj.title}}</h1>
+        <div class="post-container">
+            <img src="{{post.image|default:'http://placekitten.com/g/200/300'}}" class="fluid d-block mx-auto"alt="post image"/>
+            <p class="my-4 text-center">{{post_obj.description}}</p>
+
+            <div class="row">
+                <span>Created By: </span>
+                <div class="user ml-3">
+                    <a class="mb-2 d-block" href="{% url 'users:detail' post_obj.author.id %}">{{post_obj.author.email|default:'anonymous'}}</a>
+                    <div>{{post_obj.createdAt}}</div>
+                    <div>Likes: {{post_obj.likes.count}}</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
+{% endblock %}

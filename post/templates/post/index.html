@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+ <h1 class="text-center my-4">Latest Posts </h1>
+
+ <ul class="row list-unstyled">
+     {% for post in posts_list %}
+      <li class="px-4 col-md-4 my-md-3">
+          <a href="/posts/{{post.id}}" class="w-100">
+            <img src="{{ post.image|default:'http://placekitten.com/g/200/300' }}" class="w-100 img-fluid" style="object-fit:cover;"/>
+          </a>
+          <h1 class="my-2">{{ post.title }}</h1>
+          <p class="my-2">{{ post.description }}</p>
+          <div class="d-flex justify-content-between">
+            <a href="/posts/{{post.id}}">View Post</a>
+            <div class="likes">
+                <span {% if request.user.is_authenticated and request.user in post.likes.all %} class="fas fa-thumbs-up" {%else%} class="far fa-thumbs-up" {%endif%} id="like-btn" data-id="{{post.id}}"></span>
+                <span class="d-inline-block ml-2" id="like-count-{{forloop.counter}}">{{post.likes.count}}</span>
+            </div>
+            
+          </div>
+
+      </li>
+
+      {% endfor %}
+ </ul>
+ {% if is_paginated %}
+ 
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}  
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+      {% endif %}
+      {% for num in paginator.page_range %}
+      <li class="page-item"><a class="page-link {% if num == page_obj.number %} bg-info text-light {% endif %}" href="?page={{num}}">{{num}}</a></li>
+      {% endfor %}
+      {% if page_obj.has_next %}  
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+      {%endif%}
+    </ul>
+</nav>
+{% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('like-btn').addEventListener('click',(e)=>{
+        var elem = e.target
+        elem.style.pointerEvents = 'none'
+        fetch('/posts/likes/', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                'post_id': e.target.getAttribute('data-id')
+            })
+        })
+        .then((res)=>{
+            if(elem.classList.contains("far")){
+                elem.classList.replace("far","fas")
+                elem.nextElementSibling.innerHTML = parseInt(elem.nextElementSibling.innerHTML) + 1 
+            }
+            else{
+                elem.classList.replace("fas","far")
+                elem.nextElementSibling.innerHTML = parseInt(elem.nextElementSibling.innerHTML) - 1 
+            }
+
+        })
+        .catch((err)=>{
+            console.error(err.response)
+        })
+        .finally(()=>{
+            elem.style.pointerEvents = 'auto'
+        })
+
+    })
+</script>
+
+{% endblock %}

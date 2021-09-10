@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content%}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-4 d-flex flex-column align-items-center">
+        <h1>User Info</h1>
+        <div class="user">
+            <img class="img-fluid" src="{{ user.profileImage|default:'http://placekitten.com/g/200/300' }}" alt="">
+            <div class="info mt-4">
+                <p>Name: {{user.first_name}}</p>
+                <p>Email: {{user.email}}</p>
+                <p>followers: <span id="follow-count">{{user.followers.count}}</span> </p>
+            </div>
+        </div>
+        <form action="javascript::void()" class="w-100">
+            <input type="hidden" id="follower_id" name="follower_id" value="{{request.user.id}}">
+            <input type="hidden" id="following_id" name="following_id" value="{{user.id}}">
+
+             {% if user not in request.user.my_following.all %} 
+              <button id="follow-btn"  class="d-flex justify-content-center align-items-center btn btn-dark w-100 py-3 follow"> <div class="spinner-border mr-2 d-none loader"></div> <span id="btn-text font-weight-bold">Follow</span></button> 
+             {% else %} 
+              <button id="un-follow-btn" class="btn d-flex justify-content-center align-items-center btn-dark w-100 py-3 follow"> <div class="spinner-border mr-2 d-none loader"></div> <span id="btn-text">Un-Follow</span></button>
+             {% endif %}
+        </form>
+    </div>
+
+</div>
+
+<div class="related-posts mt-4">
+    <h2 class="my-2">User Posts</h2>
+    <ul>
+        {% for post in user.posts.all %}
+         <li><a href="{% url 'post:detail' post.id %}">{{post.title}}</a></li>
+         {% endfor %}
+    </ul>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+  
+  <script>
+      var loder = document.getElementsByClassName('loader')[0];
+      var count = document.getElementById('follow-count')
+      window.addEventListener('click',(e)=>{
+        var elem = e.target
+        if(elem.classList.contains('follow')){
+            elem.style.pointerEvents = 'none'
+            loder.classList.remove('d-none')
+            fetch('/users/relation/', {
+                method: 'POST',
+                headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    'follower_id': document.getElementById('follower_id').value,
+                    'following_id': document.getElementById('following_id').value,
+                    'req_type': e.target.id == 'follow-btn' ? 'add' : 'remove'
+                })
+            })
+            .then((res)=>{
+                if(e.target.id=='follow-btn'){
+                    e.target.id='unfollow-btn'
+                    e.target.children[1].innerHTML = "Un-Follow"
+                    count.innerHTML = parseInt(count.innerHTML) + 1 
+                }
+                else{
+                    e.target.id='follow-btn'
+                    e.target.children[1].innerHTML = "Follow"
+                    count.innerHTML = parseInt(count.innerHTML) - 1
+                    
+                }
+
+            })
+            .catch((err)=>{
+                console.error(err.response)
+            })
+            .finally(()=>{
+                elem.style.pointerEvents = 'auto'
+                loder.classList.add('d-none')
+                // window.location.reload()
+                
+            })
+        }
+      })
+  </script>
+
+{% endblock %}
