@@ -21,7 +21,7 @@ class PostListView(LoginRequiredMixin,ListView):
     paginate_by=3
     
     def get_queryset(self):
-        return super().get_queryset().order_by('-createdAt')
+        return super().get_queryset().filter(author__in=self.request.user.my_following.all()).order_by('-createdAt')
 
 
     def get_context_data(self, **kwargs):

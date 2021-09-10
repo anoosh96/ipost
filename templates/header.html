@@ -11,6 +11,9 @@
             <li class="nav-item">
             <a class="nav-link" href="{% url 'post:create' %}">Create Post</a>
             </li>
+            {% if request.user.is_authenticated %}
+            <li><a class="nav-link" href="{% url 'users:logout' %}?next={% url 'users:login' %}">People</a></li>
+            {%endif%}
             <li class="nav-item">
                 {% if request.user.is_authenticated %}
                 <a class="nav-link" href="{% url 'users:logout' %}?next={% url 'users:login' %}">Logout</a>
